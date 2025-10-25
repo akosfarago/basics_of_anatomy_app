@@ -39,9 +39,20 @@ class PickerHandler:
         x, y = self.interactor.GetEventPosition()
         self.picker.Pick(x, y, 0, self.renderer)
         picked_actor = self.picker.GetActor()
+
         if picked_actor and picked_actor in self.actor_name_map:
-            self.camera_controller.start_zoom_animation(picked_actor)
+            # Clicked a bone
+            if self.camera_controller.bone_zoom_state:
+                if picked_actor == self.camera_controller.target_actor:
+                    # Already zoomed into this bone → allow rotation
+                    return
+                else:
+                    # Zoom into a new bone
+                    self.camera_controller.start_zoom_animation(picked_actor)
+            else:
+                # Not zoomed yet → zoom into this bone
+                self.camera_controller.start_zoom_animation(picked_actor)
         else:
-            # Click empty space → zoom out
+            # Clicked empty space → zoom out if zoomed
             if self.camera_controller.bone_zoom_state:
                 self.camera_controller.start_zoom_animation(None)
