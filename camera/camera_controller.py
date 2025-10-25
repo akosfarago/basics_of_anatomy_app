@@ -12,7 +12,8 @@ class CameraController:
         self.text_overlay = text_overlay_manager  # For updating rotation hints
 
         # --- Rotation state ---
-        self.rotation_enabled = False  # Disabled by default
+        self.rotation_enabled = False
+        self.interactor.SetInteractorStyle(vtk.vtkInteractorStyleUser())
 
         # --- Zoom animation state ---
         self.bone_zoom_state = False
@@ -44,11 +45,6 @@ class CameraController:
             self.interactor.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         else:
             self.interactor.SetInteractorStyle(vtk.vtkInteractorStyleUser())
-
-        print(f"Rotation Enabled: {self.rotation_enabled}")
-
-        # Update hint text
-        if self.text_overlay:
             self.text_overlay.update_rotation_hint(self.rotation_enabled)
 
     # --- Reset camera ---
@@ -131,12 +127,13 @@ class CameraController:
         self.current_step = 0
         if self.timer_id is None:
             self.timer_id = self.interactor.CreateRepeatingTimer(16)
+            self.interactor.AddObserver("TimerEvent", self.animate_camera)
 
     def animate_camera(self, obj, event):
         if self.current_step >= self.animation_steps:
-            if self.timer_id is not None:
-                self.interactor.DestroyTimer(self.timer_id)
-                self.timer_id = None
+            if self.timer_id is None:
+                self.timer_id = self.interactor.CreateRepeatingTimer(16)
+                self.interactor.AddObserver("TimerEvent", self.animate_camera)
             return
 
         t = (self.current_step + 1) / self.animation_steps
