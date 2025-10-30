@@ -1,5 +1,7 @@
 import vtk
 from viewer_app import SkeletonViewerApp
+from language.language import t
+from ui.settings_menu_point import SettingsMenu
 
 
 class MainMenu:
@@ -14,7 +16,12 @@ class MainMenu:
         self.interactor.SetRenderWindow(self.render_window)
 
         # Menu items
-        self.menu_items = ["Skeleton Anatomy", "Muscle Anatomy", "Settings", "Quit"]
+        self.menu_items = [
+            t("menu_skeleton"),
+            t("menu_muscle"),
+            t("menu_settings"),
+            t("menu_quit")
+        ]
         self.text_actors = []
         self.highlighted = None
 
@@ -24,12 +31,23 @@ class MainMenu:
 
     def _build_menu(self):
         width, height = self.render_window.GetSize()
-        n_items = len(self.menu_items)
-        font_size = max(width, height) // 30  # scale font size to window
-        spacing = height // (n_items + 2)  # vertical spacing
-        start_y = height - spacing * 2  # top padding
+        # Fetch translated labels every time
+        self.menu_items = [
+            t("menu_skeleton"),
+            t("menu_muscle"),
+            t("menu_settings"),
+            t("menu_quit")
+        ]
 
-        self.text_actors = []
+        n_items = len(self.menu_items)
+        font_size = max(width, height) // 30
+        spacing = height // (n_items + 2)
+        start_y = height - spacing * 2
+
+        # Remove existing actors
+        for actor in self.text_actors:
+            self.renderer.RemoveActor(actor)
+        self.text_actors.clear()
 
         for i, label in enumerate(self.menu_items):
             text_actor = vtk.vtkTextActor()
@@ -44,6 +62,7 @@ class MainMenu:
             self.text_actors.append(text_actor)
 
         self.renderer.SetBackground(0.05, 0.05, 0.07)
+        self.render_window.Render()
 
     def _setup_interaction(self):
         self.interactor.AddObserver("MouseMoveEvent", self._on_hover)
@@ -86,14 +105,20 @@ class MainMenu:
 
     def handle_selection(self, label):
         print(f"[Menu] Selected: {label}")
-        if label == "Quit":
+        if label == t("menu_quit"):
             self.interactor.TerminateApp()
-        elif label == "Skeleton Anatomy":
+        elif label == t("menu_skeleton"):  # <- use translation
             self._launch_skeleton_viewer()
-        elif label == "Muscle Anatomy":
+        elif label == t("menu_muscle"):  # <- use translation
             print("Muscle Anatomy viewer not implemented yet.")
-        elif label == "Settings":
-            print("Settings not implemented yet.")
+        elif label == t("menu_settings"):  # <- use translation
+            def back_to_main():
+                for actor in self.renderer.GetActors2D():
+                    self.renderer.RemoveActor(actor)
+                self._build_menu()
+                self._setup_interaction()
+
+            SettingsMenu(renderer=self.renderer, render_window=self.render_window, on_exit_callback=back_to_main)
 
     def _launch_skeleton_viewer(self):
         # Close menu first
