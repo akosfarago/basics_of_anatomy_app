@@ -41,8 +41,12 @@ class KeyHandler:
                 print("Cannot reset camera while zoomed in. Click empty space to exit zoom first.")
 
         elif key == "q":
-            self.interactor.GetRenderWindow().Finalize()
-            self.interactor.TerminateApp()
+            # Only close this viewer window
+            print("Closing Skeleton Viewer...")
+            rw = self.interactor.GetRenderWindow()
+            rw.Finalize()
+            rw.Hide()
+            self.interactor.ExitCallback()
 
         elif key == "escape":
             # Stop any ongoing animation

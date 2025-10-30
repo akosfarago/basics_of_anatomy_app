@@ -11,31 +11,56 @@ class SkeletonViewerApp:
         self.renderer = vtk.vtkRenderer()
         self.render_window = vtk.vtkRenderWindow()
         self.render_window.AddRenderer(self.renderer)
-        self.render_window.SetSize(1920, 980)
+        self.render_window.FullScreenOn()
+
         self.interactor = vtk.vtkRenderWindowInteractor()
         self.interactor.SetRenderWindow(self.render_window)
 
-        # Load model
+        # Load 3D model
+        self._load_model(obj_path)
+
+        # Setup camera and UI
+        self.text_mgr = TextOverlayManager(self.renderer)
+        self.camera_ctrl = CameraController(
+            self.renderer.GetActiveCamera(),
+            self.renderer,
+            self.interactor,
+            text_overlay_manager=self.text_mgr
+        )
+        self.picker_handler = PickerHandler(
+            self.interactor,
+            self.renderer,
+            self.actor_map,
+            self.text_mgr,
+            self.camera_ctrl
+        )
+
+    def _load_model(self, obj_path):
         loader = ObjLoader(obj_path)
         self.actors, self.actor_map = loader.load_grouped_obj()
         for actor in self.actors:
             self.renderer.AddActor(actor)
-
         self.renderer.ResetCamera()
 
-        # Setup camera and UI
+    def run(self):
+        self.render_window.Render()
+        self.interactor.Start()
+        print("Viewer closed, returning to main menu.")
+
+    def load_viewer(self, obj_path):
+        loader = ObjLoader(obj_path)
+        actors, actor_map = loader.load_grouped_obj()
+        for actor in actors:
+            self.renderer.AddActor(actor)
+        self.renderer.ResetCamera()
+
         self.text_mgr = TextOverlayManager(self.renderer)
         self.camera_ctrl = CameraController(self.renderer.GetActiveCamera(),
                                             self.renderer,
                                             self.interactor,
                                             text_overlay_manager=self.text_mgr)
-        self.text_mgr = TextOverlayManager(self.renderer)
         self.picker_handler = PickerHandler(self.interactor,
                                             self.renderer,
-                                            self.actor_map,
+                                            actor_map,
                                             self.text_mgr,
                                             self.camera_ctrl)
-
-    def run(self):
-        self.render_window.Render()
-        self.interactor.Start()

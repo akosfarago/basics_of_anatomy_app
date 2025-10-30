@@ -1,5 +1,5 @@
-from viewer_app import SkeletonViewerApp
+from ui.main_menu import MainMenu
 
 if __name__ == "__main__":
-    app = SkeletonViewerApp("models/male_human_skeleton.obj")
+    app = MainMenu()
     app.run()

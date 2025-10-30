@@ -36,7 +36,9 @@ class TextOverlayManager:
     • Hover bone → highlight name
     • Click bone → zoom & details
     • Click empty space → exit zoom
-    • Press R → enable rotation ({state})
+    • Press R → enable rotation (mouse left click and hold) 
+    • While being zoomed on bone, rotation must
+    • be made by holding on the bone.
     • Press F → reset camera
     • Press Q → quit
     """)
